@@ -36,5 +36,5 @@ Abstraction adalah proses menyembunyikan detail implementasi dan hanya menampilk
 Menggunakan UserDetailsService dari Spring Security adalah bentuk abstraksi. Kita tidak tahu bagaimana Spring Security menangani detail login sepenuhnya, tetapi kita hanya perlu mengimplementasikan method loadUserByUsername:
 
 Demo Proyek
-Github: Github
-Youtube: Youtube
+Github: [Github](https://github.com/anifbur/-UTS_PBO2_K23A_23552011075)
+Drive: https://drive.google.com/drive/folders/1CaYW_YBAcfuBcmd0Vv-awp0SJrUcLi0k?usp=sharing
