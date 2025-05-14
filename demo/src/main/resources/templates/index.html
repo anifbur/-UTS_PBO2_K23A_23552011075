@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #f8f9ff, #e8eaff);
+        }
+
+        .header-text {
+            color: #6c63ff;
+            font-weight: 600;
+        }
+
+        .btn-purple {
+            background-color: #6c63ff;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-purple:hover {
+            background-color: #584ee0;
+        }
+
+        .table thead {
+            background-color: #ebe9ff;
+        }
+
+        .badge-purple {
+            background-color: #6c63ff;
+            color: white;
+        }
+
+        .modal-header {
+            background-color: #6c63ff;
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: #6c63ff;
+            box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+        }
+
+        a {
+            color: #6c63ff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="header-text">📝 To-Do List</h2>
+            <p class="text-muted mb-0">Login sebagai: <strong th:text="${currentUser}">[username]</strong></p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline-secondary">Logout</button>
+        </form>
+    </div>
+
+    <!-- Tambah Tugas -->
+    <form th:action="@{/index/add}" method="post" class="mb-4 d-flex gap-2">
+        <input type="text" name="task" class="form-control" placeholder="Tambahkan tugas..." required>
+        <button type="submit" class="btn btn-purple">Tambah</button>
+    </form>
+
+    <!-- Filter -->
+    <form th:action="@{/index/filter}" method="post" class="mb-4">
+        <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="all" th:selected="${selectedStatus == 'all'}">Semua</option>
+            <option value="completed" th:selected="${selectedStatus == 'completed'}">Selesai</option>
+            <option value="pending" th:selected="${selectedStatus == 'pending'}">Belum Selesai</option>
+        </select>
+    </form>
+
+    <!-- Tabel -->
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>Tugas</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="todo, iterStat : ${todos}">
+                <td th:text="${iterStat.index + 1}"></td>
+                <td>
+                    <span th:text="${todo.task}" th:classappend="${todo.completed} ? 'text-decoration-line-through text-muted' : ''"></span>
+                    <br/>
+                    <small class="text-muted" th:if="${todo.detail != null && !todo.detail.isEmpty()}"
+                           th:text="'📋 ' + ${todo.detail}"></small>
+                </td>
+                <td>
+                    <span th:text="${todo.completed} ? 'Selesai' : 'Belum'"
+                          th:classappend="${todo.completed} ? 'badge bg-success' : 'badge bg-warning text-dark'"></span>
+                </td>
+                <td>
+                    <div class="d-flex justify-content-center gap-1">
+                        <!-- Selesai -->
+                        <form th:action="@{'/index/update/' + ${todo.id}}" method="post">
+                            <button type="submit" class="btn btn-sm btn-success">✔</button>
+                        </form>
+
+                        <!-- Delete -->
+                        <form th:action="@{'/index/delete/' + ${todo.id}}" method="post">
+                            <button type="submit" class="btn btn-sm btn-danger">❌</button>
+                        </form>
+
+                        
+
+                        <!-- Edit -->
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                th:attr="data-bs-target='#isiModal' + ${todo.id}">Edit</button>
+                    </div>
+
+                    <!-- Modal Isi -->
+                    <div class="modal fade" th:id="'isiModal' + ${todo.id}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form th:action="@{'/index/detail/' + ${todo.id}}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Isi Detail Tugas</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <textarea name="detail" class="form-control" rows="4"
+                                                  placeholder="Isi detail tugas..."
+                                                  th:text="${todo.detail}"></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-purple">Simpan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Edit -->
+                    <div class="modal fade" th:id="'editModal' + ${todo.id}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form th:action="@{'/index/edit/' + ${todo.id}}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Judul Tugas</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" name="task" class="form-control"
+                                               th:value="${todo.task}" required>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-warning">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </td>
+            </tr>
+            <tr th:if="${todos.size() == 0}">
+                <td colspan="4" class="text-muted text-center">Belum ada tugas.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
